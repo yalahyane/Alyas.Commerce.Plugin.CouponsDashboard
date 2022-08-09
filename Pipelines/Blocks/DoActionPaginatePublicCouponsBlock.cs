@@ -1,44 +1,33 @@
 ﻿namespace Alyas.Commerce.Plugin.CouponsDashboard.Pipelines.Blocks
 {
     using System;
-    using System.Linq;
     using System.Threading.Tasks;
     using Sitecore.Commerce.Core;
     using Sitecore.Commerce.EntityViews;
     using Sitecore.Commerce.Plugin.Coupons;
     using Sitecore.Framework.Conditions;
+    using KnownCouponViewsPolicy = Policies.KnownCouponViewsPolicy;
 
-    public class GetCouponsUsageViewBlock : GetListViewBlock
+    public class DoActionPaginatePublicCouponsBlock : DoActionPaginateListBlock
     {
-        public GetCouponsUsageViewBlock(CommerceCommander commerceCommander) : base(commerceCommander)
+        public DoActionPaginatePublicCouponsBlock(CommerceCommander commerceCommander) : base(commerceCommander)
         {
         }
+
         public override async Task<EntityView> Run(EntityView arg, CommercePipelineExecutionContext context)
         {
-            Condition.Requires(arg).IsNotNull(Name + ": The argument cannot be null.");
-            var entityViewArgument = context.CommerceContext.GetObjects<EntityViewArgument>().FirstOrDefault();
-
-            if (string.IsNullOrEmpty(entityViewArgument?.ViewName) || !entityViewArgument.ViewName.Equals(context.GetPolicy<Policies.KnownCouponViewsPolicy>().CouponUsage, StringComparison.OrdinalIgnoreCase) &&  !entityViewArgument.ViewName.Equals(context.GetPolicy<Policies.KnownCouponViewsPolicy>().CouponDashboard, StringComparison.OrdinalIgnoreCase))
+            Condition.Requires(arg).IsNotNull(this.Name + ": The argument cannot be null.");
+            if (string.IsNullOrEmpty(arg.Name) || !arg.Name.Equals(context.GetPolicy<KnownCouponViewsPolicy>().PublicCouponUsage, StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(arg.Action) || !arg.Action.Equals(context.GetPolicy<Policies.KnownCouponActionsPolicy>().PaginatePublicCoupons, StringComparison.OrdinalIgnoreCase) || !this.Validate(arg, context.CommerceContext))
                 return arg;
 
-            var entityView = new EntityView
-            {
-                EntityId = string.Empty,
-                ItemId = string.Empty,
-                Name = context.GetPolicy<Policies.KnownCouponViewsPolicy>().CouponUsage,
-                DisplayName = "Coupons Usage"
-            };
-            arg.ChildViews.Add(entityView);
-            var listName = context.GetPolicy<Policies.KnownCouponsListsPolicy>().Coupons;
-            await this.SetListMetadata(entityView, listName, context.GetPolicy<Policies.KnownCouponActionsPolicy>().PaginateCouponList, context).ConfigureAwait(false);
-            foreach (var coupon in (await this.GetEntities<Coupon>(entityView, listName, context).ConfigureAwait(false)).OfType<Coupon>())
+            foreach (var coupon in await this.GetEntities<Coupon>(arg, context).ConfigureAwait(false))
             {
                 var summaryEntityView = new EntityView
                 {
                     EntityId = coupon.Id,
                     ItemId = coupon.Id,
                     DisplayName = coupon.DisplayName,
-                    Name = context.GetPolicy<Policies.KnownCouponViewsPolicy>().Summary
+                    Name = context.GetPolicy<KnownCouponViewsPolicy>().Summary
                 };
                 var itemIdProperty = new ViewProperty
                 {
@@ -106,7 +95,7 @@
                 };
                 summaryEntityView.Properties.Add(dateUpdatedProperty);
 
-                entityView.ChildViews.Add(summaryEntityView);
+                arg.ChildViews.Add(summaryEntityView);
             }
 
             return arg;

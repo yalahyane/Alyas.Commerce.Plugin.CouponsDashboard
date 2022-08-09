@@ -7,16 +7,16 @@
     using Sitecore.Commerce.Plugin.Coupons;
     using Sitecore.Framework.Conditions;
 
-    public class DoActionPaginateCouponsListBlock : DoActionPaginateListBlock
+    public class DoActionPaginatePrivateCouponsBlock : DoActionPaginateListBlock
     {
-        public DoActionPaginateCouponsListBlock(CommerceCommander commerceCommander) : base(commerceCommander)
+        public DoActionPaginatePrivateCouponsBlock(CommerceCommander commerceCommander) : base(commerceCommander)
         {
         }
 
         public override async Task<EntityView> Run(EntityView arg, CommercePipelineExecutionContext context)
         {
             Condition.Requires(arg).IsNotNull(this.Name + ": The argument cannot be null.");
-            if (string.IsNullOrEmpty(arg.Name) || !arg.Name.Equals(context.GetPolicy<Policies.KnownCouponViewsPolicy>().CouponUsage, StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(arg.Action) || !arg.Action.Equals(context.GetPolicy<Policies.KnownCouponActionsPolicy>().PaginateCouponList, StringComparison.OrdinalIgnoreCase) || !this.Validate(arg, context.CommerceContext))
+            if (string.IsNullOrEmpty(arg.Name) || !arg.Name.Equals(context.GetPolicy<Policies.KnownCouponViewsPolicy>().PrivateCouponUsage, StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(arg.Action) || !arg.Action.Equals(context.GetPolicy<Policies.KnownCouponActionsPolicy>().PaginatePrivateCoupons, StringComparison.OrdinalIgnoreCase) || !this.Validate(arg, context.CommerceContext))
                 return arg;
 
             foreach (var coupon in await this.GetEntities<Coupon>(arg, context).ConfigureAwait(false))

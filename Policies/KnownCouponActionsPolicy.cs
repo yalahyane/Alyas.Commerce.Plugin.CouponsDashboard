@@ -2,6 +2,7 @@
 {
     public class KnownCouponActionsPolicy : Sitecore.Commerce.Plugin.Coupons.KnownCouponActionsPolicy
     {
-        public string PaginateCouponList { get; set; } = nameof(PaginateCouponList);
+        public string PaginatePublicCoupons { get; set; } = nameof(PaginatePublicCoupons);
+        public string PaginatePrivateCoupons { get; set; } = nameof(PaginatePrivateCoupons);
     }
 }
