@@ -8,6 +8,7 @@
     using Sitecore.Commerce.EntityViews;
     using Sitecore.Commerce.Plugin.BusinessUsers;
     using Sitecore.Commerce.Plugin.Coupons;
+    using Sitecore.Commerce.Plugin.Orders;
     using Sitecore.Framework.Configuration;
     using Sitecore.Framework.Pipelines.Definitions.Extensions;
 
@@ -19,6 +20,10 @@
             services.RegisterAllPipelineBlocks(assembly);
 
             services.Sitecore().Pipelines(config => config
+                .ConfigurePipeline<IOrderPlacedPipeline>(configure =>
+                {
+                    configure.Add<AddOrderCouponMembershipBlock>().After<OrderPlacedAssignConfirmationIdBlock>();
+                })
                 .ConfigurePipeline<IBizFxNavigationPipeline>(c => c.Add<GetCouponsNavigationViewBlock>().After<GetNavigationViewBlock>())
                 .ConfigurePipeline<IGetEntityViewPipeline>(c =>
                 {
